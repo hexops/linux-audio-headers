@@ -1,77 +1,80 @@
 #!/bin/bash
 set -ex
 
-## alsa-lib
-#rm -rf alsa-lib || true
-#git clone --depth 1 'git://git.alsa-project.org/alsa-lib.git' _alsa-lib
-#pushd _alsa-lib
-#./gitcompile
-#make DESTDIR="$(pwd)/out" install
-#popd
-#mkdir alsa-lib
-#mv _alsa-lib/out/usr/include/* alsa-lib
-#rm -rf _alsa-lib
-#
-## pulseaudio
-#rm -rf pulse || true
-#git clone --depth 1 'https://gitlab.freedesktop.org/pulseaudio/pulseaudio.git' _pulseaudio
-#mkdir pulse
-## list taken from https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/blob/master/src/pulse/meson.build#L37-67
-#libpulse_headers=(
-#	'cdecl.h'
-#	'channelmap.h'
-#	'context.h'
-#	'def.h'
-#	'direction.h'
-#	'error.h'
-#	'ext-device-manager.h'
-#	'ext-device-restore.h'
-#	'ext-stream-restore.h'
-#	'format.h'
-#	'gccmacro.h'
-#	'introspect.h'
-#	'mainloop-api.h'
-#	'mainloop-signal.h'
-#	'mainloop.h'
-#	'operation.h'
-#	'proplist.h'
-#	'pulseaudio.h'
-#	'rtclock.h'
-#	'sample.h'
-#	'scache.h'
-#	'stream.h'
-#	'subscribe.h'
-#	'thread-mainloop.h'
-#	'timeval.h'
-#	'utf8.h'
-#	'util.h'
-#	'volume.h'
-#	'xmalloc.h'
-#)
-#for header in "${libpulse_headers[@]}"; do
-#	mv "_pulseaudio/src/pulse/$header" "pulse/$header"
-#done
-## generate version header
-#pushd _pulseaudio
-#pulseaudio_versions=($(./git-version-gen . |
-#	sed -n 's/^\([0-9]\+\)\.\([0-9]\+\).*$/\1 \2/p'))
-#
-#pa_api_version="$(sed -n 's/pa_api_version = \([0-9]\+\)/\1/p' meson.build)"
-#pa_protocol_version="$(sed -n 's/pa_protocol_version = \([0-9]\+\)/\1/p' meson.build)"
-#popd
-#sed \
-#	-e "s/@PA_MAJOR@/${pulseaudio_versions[0]}/g" \
-#	-e "s/@PA_MINOR@/${pulseaudio_versions[1]}/g" \
-#	-e "s/@PA_API_VERSION@/${pa_api_version}/g" \
-#	-e "s/@PA_PROTOCOL_VERSION@/${pa_protocol_version}/g" \
-#	_pulseaudio/src/pulse/version.h.in >pulse/version.h
-#rm -rf _pulseaudio
-#
-## jack2
-#rm -rf jack || true
-#git clone --depth 1 'https://github.com/jackaudio/jack2.git' _jack
-#mv _jack/common/jack jack
-#rm -rf _jack
+# alsa-lib
+rm -rf alsa-lib || true
+git clone --depth 1 'git://git.alsa-project.org/alsa-lib.git' _alsa-lib
+pushd _alsa-lib
+./gitcompile
+make DESTDIR="$(pwd)/out" install
+popd
+mkdir alsa-lib
+mv _alsa-lib/COPYING alsa-lib/LICENSE
+mv _alsa-lib/out/usr/include/* alsa-lib
+rm -rf _alsa-lib
+
+# pulseaudio
+rm -rf pulse || true
+git clone --depth 1 'https://gitlab.freedesktop.org/pulseaudio/pulseaudio.git' _pulseaudio
+mkdir pulse
+# list taken from https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/blob/master/src/pulse/meson.build#L37-67
+libpulse_headers=(
+	'cdecl.h'
+	'channelmap.h'
+	'context.h'
+	'def.h'
+	'direction.h'
+	'error.h'
+	'ext-device-manager.h'
+	'ext-device-restore.h'
+	'ext-stream-restore.h'
+	'format.h'
+	'gccmacro.h'
+	'introspect.h'
+	'mainloop-api.h'
+	'mainloop-signal.h'
+	'mainloop.h'
+	'operation.h'
+	'proplist.h'
+	'pulseaudio.h'
+	'rtclock.h'
+	'sample.h'
+	'scache.h'
+	'stream.h'
+	'subscribe.h'
+	'thread-mainloop.h'
+	'timeval.h'
+	'utf8.h'
+	'util.h'
+	'volume.h'
+	'xmalloc.h'
+)
+for header in "${libpulse_headers[@]}"; do
+	mv "_pulseaudio/src/pulse/$header" "pulse/$header"
+done
+mv _pulseaudio/LICENSE pulse
+# generate version header
+pushd _pulseaudio
+pulseaudio_versions=($(./git-version-gen . |
+	sed -n 's/^\([0-9]\+\)\.\([0-9]\+\).*$/\1 \2/p'))
+
+pa_api_version="$(sed -n 's/pa_api_version = \([0-9]\+\)/\1/p' meson.build)"
+pa_protocol_version="$(sed -n 's/pa_protocol_version = \([0-9]\+\)/\1/p' meson.build)"
+popd
+sed \
+	-e "s/@PA_MAJOR@/${pulseaudio_versions[0]}/g" \
+	-e "s/@PA_MINOR@/${pulseaudio_versions[1]}/g" \
+	-e "s/@PA_API_VERSION@/${pa_api_version}/g" \
+	-e "s/@PA_PROTOCOL_VERSION@/${pa_protocol_version}/g" \
+	_pulseaudio/src/pulse/version.h.in >pulse/version.h
+rm -rf _pulseaudio
+
+# jack2
+rm -rf jack || true
+git clone --depth 1 'https://github.com/jackaudio/jack2.git' _jack
+mv _jack/common/jack jack
+mv _jack/COPYING jack/LICENSE
+rm -rf _jack
 
 # pipewire and SPA
 rm -rf pipewire || true
@@ -139,7 +142,19 @@ pipewire_headers=(
 	'extensions/session-manager.h'
 )
 for header in "${pipewire_headers[@]}"; do
-    mv "_pipewire/src/pipewire/$header" "pipewire/$header"
+	mv "_pipewire/src/pipewire/$header" "pipewire/$header"
 done
+# generate version header
+pw_versions=($(sed -n 's/^ *version : '\''\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)'\'',$/\1 \2 \3/p' _pipewire/meson.build))
+pw_api_version="$(sed -n 's/^apiversion = '\''\(.*\)'\''$/\1/p' _pipewire/meson.build)"
+sed \
+	-e "s/@PIPEWIRE_VERSION_MAJOR@/${pw_versions[0]}/g" \
+	-e "s/@PIPEWIRE_VERSION_MINOR@/${pw_versions[1]}/g" \
+	-e "s/@PIPEWIRE_VERSION_MICRO@/${pw_versions[2]}/g" \
+	-e "s/@PIPEWIRE_VERSION_NANO@/0/g" \
+	-e "s/@PIPEWIRE_API_VERSION@/${pw_api_version}/g" \
+	_pipewire/src/pipewire/version.h.in >pipewire/version.h
+cp _pipewire/LICENSE pipewire
 mv _pipewire/spa/include/spa spa
+mv _pipewire/LICENSE spa
 rm -rf _pipewire
