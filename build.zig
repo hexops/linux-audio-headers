@@ -17,5 +17,5 @@ pub fn build(b: *std.Build) void {
     lib.installHeadersDirectory("pulse", "pulse");
     lib.installHeadersDirectory("spa", "spa");
 
-    lib.install();
+    b.installArtifact(lib);
 }
