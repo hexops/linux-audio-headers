@@ -1,5 +1,6 @@
-#!/bin/bash
-set -ex
+#!/usr/bin/env bash
+set -euo pipefail
+set -x
 
 # alsa-lib
 rm -rf alsa-lib || true
