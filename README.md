@@ -6,6 +6,7 @@ This is a Zig package which provides various Linux audio headers needed to devel
 * Jack
 * PipeWire
 * PulseAudio
+* sndio
 * SPA
 
 ## Updating
