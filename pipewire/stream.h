@@ -151,6 +151,9 @@ extern "C" {
  *
  * \section sec_stream_environment Environment Variables
  *
+ * The environment variable PIPEWIRE_AUTOCONNECT can be used to override the
+ * flag and force apps to autoconnect or not.
+ *
  */
 /** \defgroup pw_stream Stream
  *
@@ -223,10 +226,12 @@ struct pw_stream_control {
  * value, and pw_time.ticks, were captured at pw_time.now and can be extrapolated
  * to the current time like this:
  *
+ *\code{.c}
  *    struct timespec ts;
  *    clock_gettime(CLOCK_MONOTONIC, &ts);
  *    int64_t diff = SPA_TIMESPEC_TO_NSEC(&ts) - pw_time.now;
  *    int64_t elapsed = (pw_time.rate.denom * diff) / (pw_time.rate.num * SPA_NSEC_PER_SEC);
+ *\endcode
  *
  * pw_time.delay contains the total delay that a signal will travel through the
  * graph. This includes the delay caused by filters in the graph as well as delays
@@ -252,15 +257,21 @@ struct pw_stream_control {
  * in milliseconds for the first sample in the newly queued buffer to be played
  * by the hardware can be calculated as:
  *
+ *\code{.unparsed}
  *  (pw_time.buffered * 1000 / stream.samplerate) +
  *    (pw_time.queued * 1000 / app.rate) +
  *     ((pw_time.delay - elapsed) * 1000 * pw_time.rate.num / pw_time.rate.denom)
+ *\endcode
  *
  * The current extrapolated time (in ms) in the source or sink can be calculated as:
  *
+ *\code{.unparsed}
  *  (pw_time.ticks + elapsed) * 1000 * pw_time.rate.num / pw_time.rate.denom
+ *\endcode
  *
+ * Below is an overview of the different timing values:
  *
+ *\code{.unparsed}
  *           stream time domain           graph time domain
  *         /-----------------------\/-----------------------------\
  *
@@ -272,6 +283,7 @@ struct pw_stream_control {
  *                                    latency             latency
  *         \--------/\-------------/\-----------------------------/
  *           queued      buffered            delay
+ *\endcode
  */
 struct pw_time {
 	int64_t now;			/**< the monotonic time in nanoseconds. This is the time
@@ -375,6 +387,13 @@ enum pw_stream_flags {
 							  *  needs to be called. This can be used
 							  *  when the output of the stream depends
 							  *  on input from other streams. */
+	PW_STREAM_FLAG_ASYNC		= (1 << 10),	/**< Buffers will not be dequeued/queued from
+							  *  the realtime process() function. This is
+							  *  assumed when RT_PROCESS is unset but can
+							  *  also be the case when the process() function
+							  *  does a trigger_process() that will then
+							  *  dequeue/queue a buffer from another process()
+							  *  function. since 0.3.73 */
 };
 
 /** Create a new unconneced \ref pw_stream
@@ -447,18 +466,19 @@ int pw_stream_set_error(struct pw_stream *stream,	/**< a \ref pw_stream */
 			const char *error,		/**< an error message */
 			...) SPA_PRINTF_FUNC(3, 4);
 
-/** Complete the negotiation process with result code \a res
- *
- * This function should be called after notification of the format.
-
- * When \a res indicates success, \a params contain the parameters for the
- * allocation state.  */
+/** Update the param exposed on the stream. */
 int
 pw_stream_update_params(struct pw_stream *stream,	/**< a \ref pw_stream */
-			const struct spa_pod **params,	/**< an array of params. The params should
-							  *  ideally contain parameters for doing
-							  *  buffer allocation. */
+			const struct spa_pod **params,	/**< an array of params. */
 			uint32_t n_params		/**< number of elements in \a params */);
+
+/**
+ * Set a parameter on the stream. This is like pw_stream_set_control() but with
+ * a complete spa_pod param. It can also be called from the param_changed event handler
+ * to intercept and modify the param for the adapter. Since 0.3.70 */
+int pw_stream_set_param(struct pw_stream *stream,	/**< a \ref pw_stream */
+			uint32_t id,			/**< the id of the param */
+			const struct spa_pod *param	/**< the params to set */);
 
 /** Get control values */
 const struct pw_stream_control *pw_stream_get_control(struct pw_stream *stream, uint32_t id);

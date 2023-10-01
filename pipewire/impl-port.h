@@ -36,7 +36,7 @@ enum pw_impl_port_state {
 
 /** Port events, use \ref pw_impl_port_add_listener */
 struct pw_impl_port_events {
-#define PW_VERSION_IMPL_PORT_EVENTS 2
+#define PW_VERSION_IMPL_PORT_EVENTS 3
 	uint32_t version;
 
 	/** The port is destroyed */
@@ -72,6 +72,8 @@ struct pw_impl_port_events {
 
 	/** latency changed. Since version 2 */
 	void (*latency_changed) (void *data);
+	/** tag changed. Since version 3 */
+	void (*tag_changed) (void *data);
 };
 
 /** Create a new port
@@ -97,6 +99,9 @@ const struct pw_port_info *pw_impl_port_get_info(struct pw_impl_port *port);
 
 /** Get the port id */
 uint32_t pw_impl_port_get_id(struct pw_impl_port *port);
+
+/** Get the port state as a string */
+const char *pw_impl_port_state_as_string(enum pw_impl_port_state state);
 
 /** Get the port parent node or NULL when not yet set */
 struct pw_impl_node *pw_impl_port_get_node(struct pw_impl_port *port);

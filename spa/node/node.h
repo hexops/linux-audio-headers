@@ -485,7 +485,9 @@ struct spa_node_methods {
 	 *
 	 * When \a param is NULL, the parameter will be unset.
 	 *
-	 * This function must be called from the main thread.
+	 * This function must be called from the main thread. The node muse be paused
+	 * or the port SPA_IO_Buffers area is NULL when this function is called with
+	 * a param that changes the processing state (like a format change).
 	 *
 	 * \param node a struct \ref spa_node
 	 * \param direction a enum \ref spa_direction
@@ -540,7 +542,8 @@ struct spa_node_methods {
 	 * When this function returns async, use the spa_node_sync operation to
 	 * wait for completion.
 	 *
-	 * This function must be called from the main thread.
+	 * This function must be called from the main thread. The node muse be paused
+	 * or the port SPA_IO_Buffers area is NULL when this function is called.
 	 *
 	 * \param object an object implementing the interface
 	 * \param direction a port direction
@@ -565,6 +568,11 @@ struct spa_node_methods {
 	 * Setting an \a io of NULL will disable the port io.
 	 *
 	 * This function must be called from the main thread.
+	 *
+	 * This function can be called when the node is running and the node
+	 * must be prepared to handle changes in io areas while running. This
+	 * is normally done by synchronizing the port io updates with the
+	 * data processing loop.
 	 *
 	 * \param direction a spa_direction
 	 * \param port_id a port id
@@ -632,6 +640,16 @@ struct spa_node_methods {
 	_res;								\
 })
 
+#define spa_node_method_fast(o,method,version,...)			\
+({									\
+	int _res;							\
+	struct spa_node *_n = o;					\
+	spa_interface_call_fast_res(&_n->iface,				\
+			struct spa_node_methods, _res,			\
+			method, version, ##__VA_ARGS__);		\
+	_res;								\
+})
+
 #define spa_node_add_listener(n,...)		spa_node_method(n, add_listener, 0, __VA_ARGS__)
 #define spa_node_set_callbacks(n,...)		spa_node_method(n, set_callbacks, 0, __VA_ARGS__)
 #define spa_node_sync(n,...)			spa_node_method(n, sync, 0, __VA_ARGS__)
@@ -647,7 +665,9 @@ struct spa_node_methods {
 #define spa_node_port_set_io(n,...)		spa_node_method(n, port_set_io, 0, __VA_ARGS__)
 
 #define spa_node_port_reuse_buffer(n,...)	spa_node_method(n, port_reuse_buffer, 0, __VA_ARGS__)
+#define spa_node_port_reuse_buffer_fast(n,...)	spa_node_method_fast(n, port_reuse_buffer, 0, __VA_ARGS__)
 #define spa_node_process(n)			spa_node_method(n, process, 0)
+#define spa_node_process_fast(n)		spa_node_method_fast(n, process, 0)
 
 /**
  * \}
