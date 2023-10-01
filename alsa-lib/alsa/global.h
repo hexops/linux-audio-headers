@@ -51,6 +51,11 @@ const char *snd_asoundlib_version(void);
 #define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
 #endif
 
+#ifndef __STRING
+/** \brief Return 'x' argument as string */
+#define __STRING(x)     #x
+#endif
+
 #ifdef PIC /* dynamic build */
 
 /** \hideinitializer \brief Helper macro for #SND_DLSYM_BUILD_VERSION. */
@@ -82,16 +87,11 @@ extern struct snd_dlsym_link *snd_dlsym_start;
   void __SND_DLSYM_VERSION(snd_dlsym_constructor_, name, version) (void) __attribute__ ((constructor)); \
   void __SND_DLSYM_VERSION(snd_dlsym_constructor_, name, version) (void) { \
     __SND_DLSYM_VERSION(snd_dlsym_, name, version).next = snd_dlsym_start; \
-    __SND_DLSYM_VERSION(snd_dlsym_, name, version).dlsym_name = # name; \
+    __SND_DLSYM_VERSION(snd_dlsym_, name, version).dlsym_name = __STRING(name); \
     __SND_DLSYM_VERSION(snd_dlsym_, name, version).dlsym_ptr = (void *)&name; \
     snd_dlsym_start = &__SND_DLSYM_VERSION(snd_dlsym_, name, version); \
   }
 
-#endif
-
-#ifndef __STRING
-/** \brief Return 'x' argument as string */
-#define __STRING(x)     #x
 #endif
 
 /** \brief Returns the version of a dynamic symbol as a string. */

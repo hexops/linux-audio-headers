@@ -11,14 +11,20 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
+
 /** Return the version of the header files. Keep in mind that this is
 a macro and not a function, so it is impossible to get the pointer of
 it. */
-#define pw_get_headers_version() ("0.3.69")
+#define pw_get_headers_version() ("0.3.80")
 
 /** Return the version of the library the current application is
  * linked to. */
 const char* pw_get_library_version(void);
+
+/** Return TRUE if the currently linked PipeWire library version is equal
+ * or newer than the specified version. Since 0.3.75 */
+bool pw_check_library_version(int major, int minor, int micro);
 
 /** The current API version. Versions prior to 0.2.0 have
  * PW_API_VERSION undefined. Please note that this is only ever
@@ -32,7 +38,7 @@ const char* pw_get_library_version(void);
 #define PW_MINOR 3
 
 /** The micro version of PipeWire. \since 0.2.0 */
-#define PW_MICRO 69
+#define PW_MICRO 80
 
 /** Evaluates to TRUE if the PipeWire library version is equal or
  * newer than the specified. \since 0.2.0 */

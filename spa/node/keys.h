@@ -16,6 +16,8 @@ extern "C" {
 
 /** node keys */
 #define SPA_KEY_NODE_NAME		"node.name"		/**< a node name */
+#define SPA_KEY_NODE_DESCRIPTION	"node.description"	/**< localized human readable node one-line
+								  *  description. Ex. "Foobar USB Headset" */
 #define SPA_KEY_NODE_LATENCY		"node.latency"		/**< the requested node latency */
 #define SPA_KEY_NODE_MAX_LATENCY	"node.max-latency"	/**< maximum supported latency */
 
@@ -31,6 +33,7 @@ extern "C" {
 #define SPA_KEY_PORT_NAME		"port.name"		/**< a port name */
 #define SPA_KEY_PORT_ALIAS		"port.alias"		/**< a port alias */
 #define SPA_KEY_PORT_MONITOR		"port.monitor"		/**< this port is a monitor port */
+#define SPA_KEY_PORT_IGNORE_LATENCY	"port.ignore-latency"	/**< latency ignored by peers */
 
 
 /**
