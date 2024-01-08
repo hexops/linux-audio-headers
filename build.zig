@@ -22,7 +22,7 @@ pub fn build(b: *std.Build) void {
 }
 
 fn installHeadersDirectoryExcludeLicenseFiles(
-    lib: *std.build.Step.Compile,
+    lib: *std.Build.Step.Compile,
     src_dir_path: []const u8,
     dest_rel_path: []const u8,
 ) void {
